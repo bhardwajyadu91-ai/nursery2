@@ -29,17 +29,13 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .tab-btn { flex-shrink: 0; padding: 12px 16px; border-radius: 14px; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; }
         
-        /* Sync status icon */
         .sync-badge { position: absolute; top: 2px; left: 4px; font-size: 8px; }
         
-        /* Spinning animation */
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        .animate-spin-custom {
-            animation: spin 1s linear infinite;
-        }
+        .animate-spin-custom { animation: spin 1s linear infinite; }
 
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
@@ -48,7 +44,7 @@
 <body class="bg-slate-50">
     <div id="app" class="max-w-md mx-auto bg-white min-h-screen flex flex-col relative shadow-xl">
         
-        <!-- 1. LANDING PAGE (SITE SELECTION) -->
+        <!-- 1. LANDING PAGE -->
         <transition name="fade" mode="out-in">
             <div v-if="!selectedSite" key="landing" class="flex-grow flex flex-col p-8 justify-center items-center bg-emerald-600 text-white">
                 <div class="text-center mb-12">
@@ -68,7 +64,7 @@
                 </div>
                 
                 <div class="mt-12 text-[10px] opacity-40 font-bold uppercase tracking-widest">
-                    V2.5 Stable Release
+                    V2.6 Metadata Edition
                 </div>
             </div>
 
@@ -133,8 +129,8 @@
                 </main>
 
                 <!-- FOOTER LOGGING -->
-                <footer v-if="!isNumericTask && queue.length > 0" class="p-6 bg-white border-t rounded-t-[40px] shadow-2xl animate-in slide-in-from-bottom">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Recording {{task}} ({{queue.length}} Beds)</p>
+                <footer v-if="!isNumericTask && queue.length > 0" class="p-6 bg-white border-t rounded-t-[40px] shadow-2xl">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center">Recording {{task}} ({{queue.length}} Beds)</p>
                     <button @click="saveBatch" :class="headerColor" class="w-full py-5 text-white rounded-3xl font-black uppercase text-sm tracking-widest shadow-xl">
                         Confirm Done
                     </button>
@@ -148,11 +144,11 @@
                 <div class="text-center mb-6">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{task}} ENTRY</p>
                     <h3 class="font-black text-2xl uppercase italic">Bed #{{numEntry.id}}</h3>
-                    <p v-if="isSynced(numEntry.id)" class="text-[10px] text-amber-500 font-bold mt-1 underline italic">Warning: This bed is already synced to cloud.</p>
+                    <p v-if="isSynced(numEntry.id)" class="text-[10px] text-amber-500 font-bold mt-1 underline italic">Already synced to cloud.</p>
                 </div>
                 <input type="number" v-model="numEntry.val" autofocus class="w-full text-center text-6xl font-black p-8 bg-slate-50 border-4 border-slate-100 rounded-[40px] outline-none mb-6 text-slate-800" placeholder="0">
-                <button @click="saveNum" :class="headerColor" class="w-full py-5 text-white rounded-3xl font-black uppercase shadow-lg shadow-slate-200">
-                    {{ isSynced(numEntry.id) ? 'Overwrite Cloud Data' : 'Save ' + task + ' Log' }}
+                <button @click="saveNum" :class="headerColor" class="w-full py-5 text-white rounded-3xl font-black uppercase shadow-lg">
+                    {{ isSynced(numEntry.id) ? 'Overwrite Cloud' : 'Save ' + task }}
                 </button>
             </div>
         </div>
@@ -162,29 +158,50 @@
             <div class="max-w-xs mx-auto">
                 <h2 class="text-3xl font-black italic mb-8">NURSERY SETUP</h2>
                 <div class="space-y-6">
-                    <button @click="fetchMaster" :disabled="isMasterLoading" class="w-full py-5 bg-emerald-600 text-white rounded-3xl font-black uppercase text-xs shadow-lg shadow-emerald-100 disabled:opacity-50">
+                    <button @click="fetchMaster" :disabled="isMasterLoading" class="w-full py-5 bg-emerald-600 text-white rounded-3xl font-black uppercase text-xs shadow-lg disabled:opacity-50">
                         {{isMasterLoading ? 'Syncing Master...' : 'Fetch 1600 Beds Info'}}
                     </button>
-
-                    <button @click="fetchLogsFromCloud" :disabled="isLogsLoading" class="w-full py-5 bg-blue-600 text-white rounded-3xl font-black uppercase text-xs shadow-lg shadow-blue-100 disabled:opacity-50">
-                        {{isLogsLoading ? 'Refreshing Cloud Data...' : 'Check Others Work (Fetch)'}}
+                    <button @click="fetchLogsFromCloud" :disabled="isLogsLoading" class="w-full py-5 bg-blue-600 text-white rounded-3xl font-black uppercase text-xs shadow-lg disabled:opacity-50">
+                        {{isLogsLoading ? 'Refreshing Cloud...' : 'Fetch Others Work'}}
                     </button>
-
                     <button @click="clearAll" class="w-full py-4 text-red-500 font-bold text-xs uppercase underline">Reset All Local Data</button>
                     <button @click="showSettings = false" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-black uppercase text-xs mt-12">Return to Dashboard</button>
                 </div>
             </div>
         </div>
 
-        <!-- TOOLTIP MODAL -->
-        <div v-if="tip" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6" @click="tip = null">
-            <div class="bg-white p-8 rounded-[40px] w-full max-w-xs shadow-2xl" @click.stop>
-                <h3 class="font-black text-xl italic text-slate-800 mb-4">Bed #{{tip.bedId}} Info</h3>
-                <div class="bg-slate-100 p-4 rounded-2xl text-xs mb-4">
-                    <p>Species: {{tip.species}}</p>
-                    <p>Lot: {{tip.batchId}}</p>
+        <!-- TOOLTIP MODAL (UPDATED WITH MOTHER PLANT & SOWING DATE) -->
+        <div v-if="tip" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex items-center justify-center p-6" @click="tip = null">
+            <div class="bg-white p-8 rounded-[40px] w-full max-w-xs shadow-2xl relative" @click.stop>
+                <div class="absolute -top-4 -right-2 bg-emerald-500 text-white p-2 px-4 rounded-2xl font-black text-xs shadow-lg">#{{tip.bedId}}</div>
+                <h3 class="font-black text-2xl italic text-slate-800 mb-6">Plant Profile</h3>
+                
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p class="text-[9px] font-black uppercase text-slate-400 mb-1">Species</p>
+                        <p class="font-bold text-sm text-slate-800">{{tip.species || 'Not Set'}}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-[9px] font-black uppercase text-slate-400 mb-1">Batch ID</p>
+                            <p class="font-bold text-xs text-slate-800">{{tip.batchId || 'N/A'}}</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-[9px] font-black uppercase text-slate-400 mb-1">Mother</p>
+                            <p class="font-bold text-xs text-slate-800">{{tip.motherPlant || 'N/A'}}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p class="text-[9px] font-black uppercase text-slate-400 mb-1">Sowing Date</p>
+                        <p class="font-bold text-xs text-slate-800">
+                            {{ tip.sowingDate ? new Date(tip.sowingDate).toLocaleDateString() : 'N/A' }}
+                        </p>
+                    </div>
                 </div>
-                <button @click="tip = null" class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold uppercase text-xs">Dismiss</button>
+
+                <button @click="tip = null" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs mt-8 tracking-widest">Close Info</button>
             </div>
         </div>
 
@@ -195,7 +212,6 @@
     </div>
 
     <script>
-        // HARDCODED APPSCRIPT URL
         const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7Vh8ToZd9s_IwC8RkBlPev3nLYVStLDHkKwT4_M3t6fLddf7lMJ637bvoJ5ygYqNvvQ/exec";
 
         const db = new Dexie("NurseryDB_V2");
@@ -218,7 +234,6 @@
                     this.selectedSite = parseInt(savedSite);
                     await this.refresh();
                 }
-                if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
             },
             computed: {
                 headerColor() {
@@ -299,35 +314,29 @@
                         await db.logs.add({ date:this.date, locId:this.selectedSite, bedId:this.numEntry.id, task:this.task, val:this.numEntry.val, synced:0 });
                     }
                     this.showNumInput = false;
-                    this.msg(`Saved. Sync needed.`);
+                    this.msg(`Saved locally.`);
                     await this.refresh();
                 },
-                startTip(id) { this.tipTimer = setTimeout(() => { this.tip = this.master[id] || {bedId:id, locId:this.selectedSite, species:'Unknown'}; }, 800); },
+                startTip(id) { 
+                    this.tipTimer = setTimeout(() => { 
+                        this.tip = this.master[id] || {bedId:id, locId:this.selectedSite, species:'Unknown', batchId:'N/A', motherPlant:'N/A', sowingDate:null}; 
+                    }, 600); 
+                },
                 stopTip() { clearTimeout(this.tipTimer); },
                 async fetchMaster() {
-                    if(!APP_SCRIPT_URL || APP_SCRIPT_URL.includes("YOUR_APPSCRIPT")) return this.msg("Set URL in Code");
+                    if(!APP_SCRIPT_URL) return this.msg("Set URL");
                     this.isMasterLoading = true;
                     try {
                         const r = await fetch(APP_SCRIPT_URL + "?action=getMaster");
-                        if (!r.ok) throw new Error("Network Response Error");
                         const d = await r.json();
-                        // Support both flat array and {data: []} format
                         const dataArray = Array.isArray(d) ? d : (d.data || []);
-                        if (dataArray.length === 0) throw new Error("Empty Data Received");
-                        
                         await db.master.clear(); 
                         await db.master.bulkAdd(dataArray);
-                        this.msg(`Master Updated: ${dataArray.length} items`); 
+                        this.msg(`Updated: ${dataArray.length} items`); 
                         await this.refresh();
-                    } catch(e) { 
-                        console.error(e);
-                        this.msg("Master Fetch Error: Check Console"); 
-                    } finally { 
-                        this.isMasterLoading = false; 
-                    }
+                    } catch(e) { this.msg("Fetch Error"); } finally { this.isMasterLoading = false; }
                 },
                 async fetchLogsFromCloud() {
-                    if(!APP_SCRIPT_URL || APP_SCRIPT_URL.includes("YOUR_APPSCRIPT")) return this.msg("Set URL in Code");
                     this.isLogsLoading = true;
                     try {
                         const r = await fetch(`${APP_SCRIPT_URL}?action=getLogs&date=${this.date}`);
@@ -344,19 +353,18 @@
                                 await db.logs.update(exists.id, { synced: 1 });
                             }
                         }
-                        this.msg(`Cloud Refresh: ${updated} updates`);
+                        this.msg(`Refreshed: ${updated} changes`);
                         await this.refresh();
                     } catch(e) { this.msg("Sync Failed"); } finally { this.isLogsLoading = false; }
                 },
                 async syncData() {
-                    if(!APP_SCRIPT_URL || APP_SCRIPT_URL.includes("YOUR_APPSCRIPT") || this.isSyncing) return;
-                    
+                    if(this.isSyncing) return;
                     this.isSyncing = true;
                     try {
                         await this.fetchLogsFromCloud();
                         const unsynced = await db.logs.where('synced').equals(0).toArray();
                         if (unsynced.length === 0) {
-                            this.msg("All caught up");
+                            this.msg("All synced");
                             this.isSyncing = false;
                             return;
                         }
@@ -364,14 +372,10 @@
                         await db.logs.where('synced').equals(0).modify({ synced: 1 });
                         this.msg("Cloud Updated ✅"); 
                         await this.refresh();
-                    } catch(e) { 
-                        this.msg("Connection Error"); 
-                    } finally { 
-                        this.isSyncing = false; 
-                    }
+                    } catch(e) { this.msg("Error"); } finally { this.isSyncing = false; }
                 },
                 msg(m) { this.toast = m; setTimeout(()=>this.toast=null, 2500); },
-                async clearAll() { if(confirm("Erase all?")){ await db.master.clear(); await db.logs.clear(); location.reload(); } }
+                async clearAll() { if(confirm("Erase all local data?")){ await db.master.clear(); await db.logs.clear(); location.reload(); } }
             }
         }).mount('#app');
     </script>
